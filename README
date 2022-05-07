@@ -1,0 +1,104 @@
+// Copyright 2021 Necula Eduard Ionut
+
+										~Tema 1 SD~
+
+
+Programul este implementat in 4 fisiere:
+
+1. Galaxi.c 
+2. CircularDoublyLinkedList.c
+3. CircularDoublyLinkedList.h
+4. utils.h
+
+
+	In Galaxi.c incepe actiunea. Programul citeste la inceput numarul de comenzi.
+	Apoi citeste de la stdin nr_comenzi;
+	Fiecare comanda este implementata separat in fisierul CircularDoublyLinkedList.c, antetul functiilor se gaseste in CircularDoublyLinkedList.h
+	Comenzile sunt urmatoarele:
+	1. ADD. 
+		Pentru ADD se foloseste urmatoarea functie:
+		void add(doubly_linked_list_t* list, int n, void* data, char *planet_name, int shield_nr);
+
+		Functia add adauga intr-o lista dubla inlantuita (list) un nod pe pozitia n, si il initializeaza cu:
+			a) void *data: care poate sa fie ori un int ori o alta lista dubla inlantuita (scuturile planetei).
+			b) planet_name: numele planetei adaugate
+			c) shield_nr: numarul de scuturi pe care le va avea avea planeta. Valorea scuturilor initial fiind 1.
+
+		La inceputul functiei main din Galaxi.c, daca prima comanda este ADD, se va proceda astfel:
+			Se creeaza o lista dubla inlantuita, reprezentand galaxia, ce va avea planete. Pentru fiecare planeta adaugata se va crea si o lista dubla inlantuita ce reprezinta scuturile planetei.
+
+	2. BLH: 
+		int swallow(doubly_linked_list_t *galaxi, int planet_index);
+
+		Comanda BLH, este implementata de functia swallow.
+		Functia swallow sterge o planeta din galaxie.
+		Cum functioneaza: Se cauta planeta aflata la planet_index. Dupa ce gasesc planeta, o izolez de restul planetelor, apoi o sterg, incepand mai intai cu scuturile planetei apoi cu planeta in sine. Daca planet_index este 0 mut head-ul galaxiei pe urmatorul element.
+		Daca am o singura planeta si dau aceasta comanda. Voi sterge toata galaxia, si o voi initializa iar cand primesc un nou ADD. De ce am facut asta? Deoarece primeam erori de la valgrind de invalid write size 8 / 4 si de invalid read size 4 / 8.
+		Functia returneaza -1 daca sterg ambele planete. In Galaxi.c daca primesc - 1, inseamna ca trebuie sa sterg galaxia, si sa fac alta la ADD(posibil).
+		(galaxia este lista care contine toate planetele)
+
+	3. UPG:
+		void upgrade(doubly_linked_list_t* galaxi, int planet_index, int shield_index, int shield_upg);
+
+		Comanda UPG este implementata de functia upgrade.
+		Aceasta comanda adauga valoarea shield_upg scutului de pe pozitia shield_index, din planeta planet_index.
+		Cum functioneaza: Se cauta planeta aflata pe pozitia planet_index. Dupa ce gasesc planeta, intru pe lista de scuturi. Traversez lista de scuturi pana ajung la indexul shield_index. Dupa ce gasesc acest index, adaug la valoarea acestuita shield_upg.
+	
+	4. EXP:
+		void add_shield(doubly_linked_list_t *galaxi, int planet_index, int shield_value);
+
+		Comanda EXP este implementata de functia add_shield.
+		Aceasta comanda adauga un scut unei planete.
+		Cum functioneaza: Se cauta planeta aflata pe pozitia planet_index. Dupa ce se gaseste, se intra pe lista de scuturi. Traversez lista de scuturi pana la ultimul elemnt. Cand am ajuns la ultimul scut, aloc un nou nod pe care il initializez cu valoarea 1. Dupa ce initializez noul nod, il adaug in lista de scuturi ale planetei, refacand legaturile intre scuturi. (noul nod pointeaza catre primul element, iar fostul ultim elemnt pointeaza catre noul nod).
+
+	5. RMV:
+		void remove_shield(doubly_linked_list_t* galaxi, int planet_index, int shield_index);
+
+		Comanda RMV este implementata de functia remove_shield.
+		Aceasta comanda sterge scutul unei planete.
+		Cum functioneaza: Se cauta planeta aflata pe pozitia planet_index. Dupa ce se gaseste, intru pe lista de scuturi. Traversez lista de scuturi pana la pozitia shield_index. Acest nod gasit se va izola de restul listei de scuturi, refac legaturile intre scuturi apoi sterg nodul.
+
+	6. COL:
+		int collide(doubly_linked_list_t *galaxi, int planet_index1, int planet_index2);
+
+		Comanda COL este implementata de functia collide.
+		Aceasta comanda loveste 2 planete una de alta, intr-o unitate de scut fiecare.
+
+		Cum functioneaza: Pentru aceasta functie, cel mai important este sa gasesti prima planeta, a doua este la un next distanta. Se cauta prima planeta aflata la planet_index1. Planeta 2 este planet_index1->next. Dupa ce am gasit planetele. Intru pe lista de scuturi a celor 2 planete. Pentru planet 1 intru pe lista de scuturi pana la pozitia size_planet1/ 4 iar pentru planeta 2 intru pe lista de scuturi la pozitia [size_planet2 / 4] * 3. Dupa ce am gasit pozitiile fiecarora, decrementez cu 1 amandoua valorile. Acum avem 3 cazuri posibile:
+			1. Ambele scuturi au valori < 0. In cazul asta sterg ambele planete
+			2. Prima planeta are scut cu valoare < 0. Sterg prima planeta apoi refac legaturile.
+			3. A doua planeta are scut cu valoare < 0. Sterg a doua planeta apoi refac legaturile.
+		Functia returneaza valoarea 2 daca sterg ambele planete din galaxie. Daca sterg ambele planete din galaxie, voi sterge si galaxa, si o voi reinitializa daca mai primesc comanda ADD. Daca am mai mul de 2 plante si se sterg 2 planete, nu voi sterge si galaxia.
+		(galaxia este lista care contine toate planetele)
+
+	7. ROT: 
+		void rotate(doubly_linked_list_t *galaxi, int  planet_index, char *the_way, int units);
+
+		Comanda ROT este implementata de functia rotate.
+		Aceasta comanda roteste o planeta in sensul the_way cu units pozitii.
+		Daca the_way nu este valid se afiseaza un mesaj corespunzator.
+		Cum functioneaza: Se cauta	planeta de la indexul planet_index. Cand gasesc planeta vad in ce sens sa merg , "c" sau "t" dat de the_way. Ca sa stiu pe ce pozitie ma duc fac: units % size_shields, size_shields reprezentand dimensiunea scuturilor planetei. Apoi voi muta head in functie de ce valoarea imi da calculul din spate.
+
+	8. SHW:
+		void show(doubly_linked_list_t* galaxi, int index_planet);
+		Comanda SHW este implementata de functia SHW.
+
+		Aceasta comanda afiseaza informatii despre planeta. 
+		Cum functioneaza: Caut planeta aflata la pozitia index_planet, apoi afisez informatiile corespunzatoare.
+
+	Functii auxiliare:
+		DIE: aflat in utils.h. Aceasta functie am folosit-o de fiecare data cand am alocat ceva cu malloc.
+
+		void dll_print_int_list(doubly_linked_list_t* list);
+			~Aceasta functie o folosesc pentru a afisa lista de scuturi din comanda SHW.
+
+		void dll_free(doubly_linked_list_t** pp_list);
+			~Aceasta functie o folosesc de fiecare data cand vreau sa sterg o intreaga planeta, cu tot cu scuturi. Intru pe lista de scuturi, merg din nod in nod, le sterg apoi la final sterg si lista (planeta).
+
+		void dll_galaxi(doubly_linked_list_t* galaxi);
+			~Aceasta este functia care sterge toata galaxia. Se plimba din planeta in planeta, pentru fiecare planeta, sterge lista de scuturi, planeta in sine, apoi trece la urmatoarea planeta pana cand size galaxi este 0.
+
+
+		Pentru fiecare functie am facut verificarile tutoror parametrilor, iar daca un parametru nu corespundea am afisat un mesaj corespunzator.
+
+		Mersi pentru corectat :).
